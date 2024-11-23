@@ -28,7 +28,7 @@ if (!admin.apps.length) {
 }
 
 // Handle push notifications
-const sendPushNotifications = async (subscriptions) => {
+const sendPushNotifications = async (subscriptions,id) => {
   if (!subscriptions) return;
 
   webpush.setVapidDetails(
@@ -51,7 +51,7 @@ const sendPushNotifications = async (subscriptions) => {
       JSON.stringify({
         title: 'New post',
         content: 'New post added',
-        url: '/help',
+        url: `/arts/${id}`,
       })
     );
   });
@@ -89,7 +89,7 @@ app.post('/postArt', async (request, response) => {
 
     // Store art data in Firebase
     await admin.database().ref('arts').child(uuid).set({
-      id: fields.id,
+      id: uuid,
       artName: fields.artName,
       artistName: fields.artistName,
       description: fields.description,
@@ -101,7 +101,7 @@ app.post('/postArt', async (request, response) => {
       .ref('subscriptions')
       .once('value');
 
-    await sendPushNotifications(subscriptionsSnapshot.val());
+    await sendPushNotifications(subscriptionsSnapshot.val(),uuid);
 
     response.status(201).json({ 
       message: 'Art stored successfully', 
